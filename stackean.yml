@@ -3,6 +3,7 @@ name: Akaunting
 engine: php
 
 globals:
+  DB_HOST: ${nodes.sqldb.address}
   DB_NAME: akaunting
   DB_USER: akaunting_user
   DB_PASS: ${fn.password(12)}
@@ -24,7 +25,7 @@ nodes:
     flexibleCloudlets: 4
     tag: 2.4.46-php-7.4.13
     env:
-      DB_MYSQL_HOST: ${nodes.sqldb.address}
+      DB_MYSQL_HOST: ${globals.DB_HOST}
       DB_MYSQL_PORT: 3306
       DB_MYSQL_USER: ${globals.DB_USER}
       DB_MYSQL_PASSWORD: ${globals.DB_PASS}
@@ -46,16 +47,16 @@ onInstall:
       name: akaunting
       context: ROOT
   - cmd [cp]:
-    - cd ${SERVER_WEBROOT}
-    - composer install
-    - php artisan install --db-host=${nodes.sqldb.address} --db-name=${globals.DB_NAME} --db-username=${globals.DB_USER} --db-password=${globals.DB_PASS} --admin-email=${globals.AKAUNTING_USER} --admin-password=${globals.AKAUNTING_PASS}
-    - php artisan sample-data:seed
+    - cp /etc/php.ini /tmp/php.ini
+    - sed -i 's/;extension=gd.so/extension=gd.so/g' /tmp/php.ini
+    - cp /tmp/php.ini /etc/php.ini
+    - cd /var/www/webroot/ROOT/
+    - php artisan install --quiet --db-host=${globals.DB_HOST} --db-name=${globals.DB_NAME} --db-username=${globals.DB_USER} --db-password=${globals.DB_PASS} --admin-email=${globals.AKAUNTING_USER} --admin-password=${globals.AKAUNTING_PASS}
   - return:
       result: success
       email: success
       
 success: |
   Your Akaunting app is successfully installed.
-  **URL**: http://node${nodes.cp.id}-${env.domain}:${globals.publicPort}
   **User**: ${globals.AKAUNTING_USER}
   **Pass**: ${globals.AKAUNTING_PASS}
