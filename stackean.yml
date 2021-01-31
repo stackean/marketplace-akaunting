@@ -24,14 +24,6 @@ nodes:
     cloudlets: 1
     flexibleCloudlets: 4
     tag: 2.4.46-php-7.4.13
-    env:
-      DB_MYSQL_HOST: ${globals.DB_HOST}
-      DB_MYSQL_PORT: 3306
-      DB_MYSQL_USER: ${globals.DB_USER}
-      DB_MYSQL_PASSWORD: ${globals.DB_PASS}
-      DB_MYSQL_NAME: ${globals.DB_NAME}
-      ADMIN_USER: ${globals.AKAUNTING_USER}
-      ADMIN_PASS: ${globals.AKAUNTING_PASS}
 onInstall:
   - prepareSqlDatabase:
       nodeGroup: sqldb
