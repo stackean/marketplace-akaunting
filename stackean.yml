@@ -1,0 +1,54 @@
+type: install
+name: Akaunting
+engine: php
+
+globals:
+  DB_HOST: ${nodes.sqldb.address}
+  DB_NAME: akaunting
+  DB_USER: akaunting_user
+  DB_PASS: ${fn.password(12)}
+  AKAUNTING_USER: ${user.email}
+  AKAUNTING_PASS: ${fn.password(12)}
+
+nodes:
+  - nodeType: mariadb-dockerized
+    nodeGroup: sqldb
+    displayName: db-node-${fn.random}
+    diskLimit: 5
+    cloudlets: 1
+    flexibleCloudlets: 4
+  - nodeType: apache
+    nodeGroup: cp
+    displayName: app-node-${fn.random}
+    diskLimit: 5
+    cloudlets: 1
+    flexibleCloudlets: 4
+    tag: 2.4.46-php-7.4.13
+onInstall:
+  - prepareSqlDatabase:
+      nodeGroup: sqldb
+      loginCredentials:
+        user: root
+        password: ${nodes.sqldb.password}
+      newDatabaseName: ${globals.DB_NAME}
+      newDatabaseUser:
+        name: ${globals.DB_USER}
+        password: ${globals.DB_PASS}
+  - deploy [cp]:
+      archive: https://github.com/akaunting/akaunting/releases/download/2.1.0/Akaunting_2.1.0-Stable.zip
+      name: akaunting
+      context: ROOT
+  - cmd [cp]:
+    - cp /etc/php.ini /tmp/php.ini
+    - sed -i 's/;extension=gd.so/extension=gd.so/g' /tmp/php.ini
+    - cp /tmp/php.ini /etc/php.ini
+    - cd /var/www/webroot/ROOT/
+    - php artisan install --quiet --db-host=${globals.DB_HOST} --db-name=${globals.DB_NAME} --db-username=${globals.DB_USER} --db-password=${globals.DB_PASS} --admin-email=${globals.AKAUNTING_USER} --admin-password=${globals.AKAUNTING_PASS}
+  - return:
+      result: success
+      email: success
+      
+success: |
+  Your Akaunting app is successfully installed.
+  **User**: ${globals.AKAUNTING_USER}
+  **Pass**: ${globals.AKAUNTING_PASS}
