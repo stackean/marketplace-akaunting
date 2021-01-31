@@ -17,6 +17,7 @@ nodes:
     cloudlets: 1
     flexibleCloudlets: 4
   - nodeType: apache
+    nodeGroup: cp
     displayName: app-node-${fn.random}
     diskLimit: 5
     cloudlets: 1
@@ -47,7 +48,7 @@ onInstall:
   - cmd [cp]:
     - cd ${SERVER_WEBROOT}
     - composer install
-    - php artisan install --db-host=${nodes.sqldb.address} --db-name=${globals.DB_NAME} --db-username=${globals.DB_USER} --db-password=${globals.DB_PASS} --admin-email=ADMIN_USER --admin-password=ADMIN_PASS
+    - php artisan install --db-host=${nodes.sqldb.address} --db-name=${globals.DB_NAME} --db-username=${globals.DB_USER} --db-password=${globals.DB_PASS} --admin-email=${globals.AKAUNTING_USER} --admin-password=${globals.AKAUNTING_PASS}
     - php artisan sample-data:seed
   - return:
       result: success
